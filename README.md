@@ -1,3 +1,4 @@
 # Non-Parametric-Homework
 
-jake7harvey.github.io
+https://jake7harvey.github.io/Non-Parametric-Homework/
+
