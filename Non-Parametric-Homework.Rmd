@@ -1,0 +1,62 @@
+---
+title: "Non-Parametric Homework"
+author: "Jake Harvey"
+date: "2025-05-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+head(ChickWeight)
+```
+
+# 1.
+
+```{r}
+data(ChickWeight)
+
+diet1_chicks <- ChickWeight[ChickWeight$Diet == 1,]
+
+matched_chicks <- intersect(diet1_chicks$Chick[diet1_chicks$Time == 0], 
+                            diet1_chicks$Chick[diet1_chicks$Time == 10])
+
+weights_time0 <- diet1_chicks$weight[diet1_chicks$Time == 0 & diet1_chicks$Chick %in% matched_chicks]
+weights_time10 <- diet1_chicks$weight[diet1_chicks$Time == 10 & diet1_chicks$Chick %in% matched_chicks]
+
+weights_time0_jittered <- jitter(weights_time0)
+weights_time10_jittered <- jitter(weights_time10)
+
+test_result <- wilcox.test(weights_time0_jittered, weights_time10_jittered, paired = TRUE, alternative = "less")
+
+print(test_result)
+wilcox.test(weights_time0, weights_time10, paired = TRUE, alternative = "less")
+```
+
+Looking at the results, even though there is a warning, it shows that p-value is extremely low which means the null-hypothesis is rejected. This means that diet 1 does have increased early weight gain.
+
+# 2.
+
+```{r}
+early_growth <- ChickWeight[ChickWeight$Time %in% c(0, 10),]
+
+growth_data <- early_growth |>
+  group_by(Chick, Diet) |>
+  summarise(weight_change = last(weight) - first(weight))
+
+kruskal.test(weight_change ~ Diet, data = growth_data)
+
+ggplot(growth_data, aes(x = factor(Diet), y = weight_change, fill = factor(Diet))) +
+  geom_boxplot() +
+  labs(title = "Comparison of Early Weight Gain Across Diets",
+       x = "Diet",
+       y = "Weight Change") +
+  theme_minimal()
+```
+
+Looking at these results, the null is still rejected. Looking at the graph it also backs this theory.
+
